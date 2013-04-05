@@ -1,0 +1,4 @@
+                     Rate          JSON::XS Data::MessagePack          MR::Pack
+JSON::XS          81920/s                --               -2%               -3%
+Data::MessagePack 83836/s                2%                --               -1%
+MR::Pack          84328/s                3%                1%                --
