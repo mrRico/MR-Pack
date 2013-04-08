@@ -26,6 +26,7 @@ typedef struct {
     STRLEN ilen;
     
     unsigned int depth;
+    unsigned int utf8;
 } packBUF;
 
 typedef packBUF *MR__Pack;
@@ -208,6 +209,7 @@ static inline SV* c_unpack(packBUF * self, unsigned int depth) {
 		    self->icur += size; 
 		    SvCUR_set(ret, cur - SvPVX(ret));
 		    *SvEND (ret) = 0;
+		    if (self->utf8) SvUTF8_on(ret);
 		} else {
 			ret = newSVpvs("");
 		}
@@ -290,7 +292,25 @@ mr_get_depth(self)
 		RETVAL = self->depth;
 	OUTPUT:
 		RETVAL
+
 		
+MR::Pack
+mr_set_utf8(self, utf8)
+	MR::Pack self
+	unsigned int utf8
+	CODE:
+		self->utf8 = utf8;
+		RETVAL = self;
+	OUTPUT:
+		RETVAL
+
+unsigned int
+mr_get_utf8(self)
+	MR::Pack self
+	CODE:
+		RETVAL = self->utf8;
+	OUTPUT:
+		RETVAL
 		
 SV * 
 mr_pack(self, ...)
