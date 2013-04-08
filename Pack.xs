@@ -112,7 +112,7 @@ static inline void c_pack(packBUF * self, SV * sv, unsigned int depth) {
     		// signed long long at unpack
     		signed long ee = SvIVX(sv);
     		if (ee < 0) {
-				pack_int(self, MP_SINT, (unsigned long) ee);
+				pack_int(self, MP_SINT, (unsigned long) -ee);
     		} else {
     			pack_int(self, MP_UINT, (unsigned long) ee);
     		}
@@ -218,7 +218,7 @@ static inline SV* c_unpack(packBUF * self, unsigned int depth) {
 		ret = newSVuv(size);
 	} else if (context == MP_SINT) {
 		dTHX;
-		ret = newSViv((signed long)size);
+		ret = newSViv(-1*(signed long)size);
 	} else if (context == MP_DOUBLE) {
 		dTHX;
 		doubleBUF u_double = {0};
