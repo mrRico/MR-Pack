@@ -12,9 +12,9 @@ sub depth {
     @_ ? $self->set_depth($_[0]) : $self->get_depth(); 
 }
 
-sub utf8 {
+sub utf8_on {
     my $self = shift;
-    @_ ? $self->set_utf8($_[0]) : $self->get_utf8(); 
+    @_ ? $self->set_utf8_on($_[0]) : $self->get_utf8_on(); 
 }
 
 1;
