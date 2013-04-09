@@ -2,8 +2,6 @@
 #include "perl.h"
 #include "XSUB.h"
 
-#include "ppport.h"
-
 typedef enum {
 	MP_RESERVED, // zero reserved
 	MP_DIE,
@@ -44,7 +42,7 @@ static inline void append_buf(packBUF* const self, const void* const buf, STRLEN
     self->cur += len;
 }
 
-static inline void pack_llen(packBUF * self, ber_context context, unsigned long size) {
+static inline void pack_llen(packBUF * self, ber_context context, unsigned long long size) {
 	unsigned char as_string[8];
 	as_string[7] = context;
 	signed char ind = 7;
@@ -92,7 +90,7 @@ static inline void pack_string(packBUF * self, const char* const pv, STRLEN cons
 	append_buf(self, pv, len);
 }
 
-static inline void pack_int(packBUF * self, ber_context context, unsigned long s_int) {
+static inline void pack_int(packBUF * self, ber_context context, unsigned long long s_int) {
 	pack_llen(self, context, s_int);
 }
 
@@ -102,19 +100,38 @@ static inline void c_pack(packBUF * self, SV * sv, unsigned int depth) {
     if (SvPOKp(sv)) {
         STRLEN const len     = SvCUR(sv);
         const char* const pv = SvPVX_const(sv);
-        pack_string(self, pv, len);
+        
+        int is_int = 0;
+        if (len > 1 && len < 12 && *pv != '0' && isDIGIT( *(pv+1) ) ) {
+        	// like a prefer_integer
+        	if (*pv == '-' && *(pv+1) != '0' ) {
+				signed long long sint = SvIVx(sv);
+				if (sint) {
+					is_int = 1;
+					pack_int(self, MP_SINT, (unsigned long long) -sint);
+				}
+        	} else if ( isDIGIT( *pv ) ) {
+        		unsigned long long uint = SvUVx(sv);
+        		if (uint) {
+					is_int = 1;
+					pack_int(self, MP_UINT, uint);
+				}
+        	}
+        }
+        
+        if (!is_int) pack_string(self, pv, len);
     } else if (SvNOKp(sv)) {
     	pack_double(self, (double)SvNVX(sv));
     } else if (SvIOKp(sv)) {
     	if(SvUOK(sv)) {
-    		pack_int(self, MP_UINT, (unsigned long) SvUVX(sv));
+    		pack_int(self, MP_UINT, (unsigned long long) SvUVX(sv));
     	} else {
     		// signed long long at unpack
-    		signed long ee = SvIVX(sv);
+    		signed long long ee = SvIVX(sv);
     		if (ee < 0) {
-				pack_int(self, MP_SINT, (unsigned long) -ee);
+				pack_int(self, MP_SINT, (unsigned long long) -ee);
     		} else {
-    			pack_int(self, MP_UINT, (unsigned long) ee);
+    			pack_int(self, MP_UINT, (unsigned long long) ee);
     		}
     	}
     } else if (SvROK(sv)) {
@@ -162,7 +179,7 @@ static inline void c_pack(packBUF * self, SV * sv, unsigned int depth) {
     return;
 }
 
-static inline ber_context unpack_llen(packBUF * self, unsigned long * size) {
+static inline ber_context unpack_llen(packBUF * self, unsigned long long * size) {
 	unsigned long long ext = 0;
 	ber_context context;
 	
@@ -193,7 +210,7 @@ static inline SV* c_unpack(packBUF * self, unsigned int depth) {
 	}
 	SV* ret;
 	
-	unsigned long size;
+	unsigned long long size;
 	ber_context context = unpack_llen(self, &size);
 	if (context == MP_DIE) {
 		return NULL;
@@ -218,7 +235,7 @@ static inline SV* c_unpack(packBUF * self, unsigned int depth) {
 		ret = newSVuv(size);
 	} else if (context == MP_SINT) {
 		dTHX;
-		ret = newSViv(-1*(signed long)size);
+		ret = newSViv(-1*(signed long long)size);
 	} else if (context == MP_DOUBLE) {
 		dTHX;
 		doubleBUF u_double = {0};

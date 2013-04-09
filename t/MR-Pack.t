@@ -21,6 +21,10 @@ use Test::More;
     my $utf = 'привет';
     is( $mp->unpack($mp->pack($utf)), $utf, "utf without flag" );
     is( $mp->utf8_on(1)->unpack($mp->pack($utf)), "\x{043F}\x{0440}\x{0438}\x{0432}\x{0435}\x{0442}", "utf with flag" );
+    my $int = -(2**31 - 1);
+    is( $mp->unpack($mp->pack($int)), $mp->unpack($mp->pack("$int")), "signed int as string" );
+    $int = 2**32-1;
+    is( $mp->unpack($mp->pack($int)), $mp->unpack($mp->pack("$int")), "unsigned int as string" );
     
     pass('*' x 10);
     print "\n";

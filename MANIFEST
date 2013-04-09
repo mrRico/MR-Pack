@@ -2,7 +2,6 @@ Changes
 Makefile.PL
 MANIFEST
 Pack.xs
-ppport.h
 README.pod
 t/MR-Pack.t
 lib/MR/Pack.pm
