@@ -2,6 +2,8 @@
 #include "perl.h"
 #include "XSUB.h"
 
+#include "ppport.h"
+
 typedef enum {
 	MP_RESERVED, // zero reserved
 	MP_DIE,

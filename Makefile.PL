@@ -7,5 +7,5 @@ WriteMakefile(
     LIBS              => [''],
     DEFINE            => '',
     INC               => '-I.',
-    OPTIMIZE        => $ENV{'OPTIMIZE'}    
+    OPTIMIZE          => $ENV{'OPTIMIZE'}    
 );
